@@ -57,3 +57,10 @@ class SignUpForm(forms.ModelForm):
 
         if password != confirm_password:
             raise ValidationError(_("Password and confirm password are not the same."))
+
+class VerifyEmailForm(forms.Form):
+    otp = forms.CharField(
+        max_length=6, 
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('OTP')}), 
+        label=_('OTP')
+    )
