@@ -1,0 +1,153 @@
+{% load i18n %} 
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="model-search-content">
+                <div class="row">
+                    <div class="col-md-offset-1 col-md-2 col-sm-12">
+                        <div class="single-model-search">
+                            <h1>Flights:</h1>
+                        </div>
+                        <div class="single-model-search">
+                            <label>
+                                <input type="radio" name="tripType" value="round" onclick="toggleReturnDate(true)"
+                                {% if trip_type != 'oneway' %}checked{% endif %}>
+                                {% trans "Round" %}
+                            </label>
+                            <label>
+                                <input type="radio" name="tripType" value="oneway" onclick="toggleReturnDate(false)"
+                                {% if trip_type == 'oneway' %}checked{% endif %}>
+                                {% trans "Oneway" %}
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-offset-1 col-md-2 col-sm-12">
+                        <div class="single-model-search">
+                            <h2>{% trans "FROM:" %}</h2>
+                            <div class="model-select-icon">
+                                <input type="text" id="from-airport" class="form-control" placeholder="Search Airport" value="{{ from_airport }}">
+                                <ul id="from-airport-suggestions" class="airport-suggestions"></ul>
+                            </div>
+                        </div>
+
+                        <div class="single-model-search">
+                            <h2>{% trans "TO:" %}</h2>
+                            <div class="model-select-icon">
+                                <input type="text" id="to-airport" class="form-control" placeholder="Search Airport" value="{{ to_airport }}">
+                                <ul id="to-airport-suggestions" class="airport-suggestions"></ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-offset-1 col-md-2 col-sm-12">
+                        <div class="single-model-search">
+                            <h2>{% trans "DEPARTURE DATE:" %}</h2>
+                            <div class="model-select-icon">
+                                <input type="date" id="departure-date" class="form-control" value="{{ departure_date }}">
+                            </div>
+                        </div>
+                        <div class="single-model-search">
+                            <h2>{% trans "RETURN DATE:" %}</h2>
+                            <div class="model-select-icon">
+                                <input type="date" id="return-date" class="form-control" value="{{ return_date }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-12">
+                        <div class="single-model-search text-center">
+                            <button class="welcome-btn model-search-btn" onclick="window.location.href='#'">
+                                {% trans "search" %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    document.getElementById("return-date").disabled = {% if trip_type == 'oneway' %}true{% else %}false{% endif %};
+
+    function toggleReturnDate(enable) {
+        const returnDateInput = document.getElementById("return-date");
+
+        if (enable) {
+            returnDateInput.disabled = false;
+            returnDateInput.value = ""; // Clear the value when enabled
+        } else {
+            returnDateInput.disabled = true;
+            returnDateInput.value = "Unavailable"; // Set the value to 'Unavailable' when disabled
+        }
+    }
+
+    var airports = JSON.parse('{{ airports|escapejs }}'); // Access airports data from Django context
+
+    // Handle airport suggestions for "FROM" field
+    const fromAirportInput = document.getElementById('from-airport');
+    const fromSuggestionsList = document.getElementById('from-airport-suggestions');
+    fromAirportInput.addEventListener('input', () => {
+        const searchTerm = fromAirportInput.value.toLowerCase();
+        const filteredAirports = airports.filter(airport =>
+            airport.city.toLowerCase().includes(searchTerm) ||
+            airport.airport_code.toLowerCase().includes(searchTerm)
+        );
+
+        fromSuggestionsList.innerHTML = '';
+
+        filteredAirports.forEach(airport => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${airport.city} (${airport.airport_code})`;
+            listItem.addEventListener('click', () => {
+                fromAirportInput.value = `${airport.airport_code}`;
+                fromSuggestionsList.innerHTML = '';
+            });
+            fromSuggestionsList.appendChild(listItem);
+        });
+    });
+
+    // Handle airport suggestions for "TO" field
+    const toAirportInput = document.getElementById('to-airport');
+    const toSuggestionsList = document.getElementById('to-airport-suggestions');
+    toAirportInput.addEventListener('input', () => {
+        const searchTerm = toAirportInput.value.toLowerCase();
+        const filteredAirports = airports.filter(airport =>
+            airport.city.toLowerCase().includes(searchTerm) ||
+            airport.airport_code.toLowerCase().includes(searchTerm)
+        );
+
+        toSuggestionsList.innerHTML = '';
+
+        filteredAirports.forEach(airport => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${airport.city} (${airport.airport_code})`;
+            listItem.addEventListener('click', () => {
+                toAirportInput.value = `${airport.airport_code}`;
+                toSuggestionsList.innerHTML = '';
+            });
+            toSuggestionsList.appendChild(listItem);
+        });
+    });
+
+    document.querySelector('.model-search-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+
+        // Get the selected trip type
+        const tripType = document.querySelector('input[name="tripType"]:checked').value;
+
+        // Extract the airport codes from the "FROM" and "TO" fields
+        const fromAirport = fromAirportInput.value;
+        const toAirport = toAirportInput.value;
+
+        // Get the departure and return dates
+        const departureDate = document.getElementById('departure-date').value;
+        const returnDate = document.getElementById('return-date').value;
+
+        // Build the URL for the search request
+        const url = `{% url 'index' %}?tripType=${tripType}&from=${encodeURIComponent(fromAirport)}&to=${encodeURIComponent(toAirport)}&departureDate=${departureDate}&returnDate=${returnDate}`;
+
+        // Redirect to the search URL
+        window.location.href = url;
+    });
+
+</script>

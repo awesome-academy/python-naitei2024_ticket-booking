@@ -15,88 +15,7 @@
       {% endif %}
     </div>
   </div>
-  <div class="container">
-    <div class="row">
-      <div class="col-md-12">
-        <div class="model-search-content">
-          <div class="row">
-            <div class="col-md-offset-1 col-md-2 col-sm-12">
-              <div class="single-model-search">
-                <h1>{% trans "Flights" %}:</h1>
-              </div>
-              <div class="single-model-search">
-                <label>
-                  <input type="radio" name="tripType" value="round"> {% trans "Round" %} </label>
-                <label>
-                  <input type="radio" name="tripType" value="oneway"> {% trans "Oneway" %} </label>
-              </div>
-            </div>
-            <div class="col-md-offset-1 col-md-2 col-sm-12">
-              <div class="single-model-search">
-                <h2>{% trans "FROM:" %}</h2>
-                <div class="model-select-icon">
-                  <select class="form-control">
-                    <option value="default">{% trans "HaNoi" %}</option>
-                    <!-- /.option-->
-                    <option value="danang">{% trans "DaNang" %}</option>
-                    <!-- /.option-->
-                    <option value="hochiminh">{% trans "HoChiMinh" %}</option>
-                    <!-- /.option-->
-                  </select>
-                  <!-- /.select-->
-                </div>
-                <!-- /.model-select-icon -->
-              </div>
-              <div class="single-model-search">
-                <h2>{% trans "TO:" %}</h2>
-                <div class="model-select-icon">
-                  <select class="form-control">
-                    <option value="default">{% trans "HaNoi" %}</option>
-                    <!-- /.option-->
-                    <option value="danang">{% trans "DaNang" %}</option>
-                    <!-- /.option-->
-                    <option value="hochiminh">{% trans "HoChiMinh" %}</option>
-                    <!-- /.option-->
-                  </select>
-                  <!-- /.select-->
-                </div>
-                <!-- /.model-select-icon -->
-              </div>
-            </div>
-            <div class="col-md-offset-1 col-md-2 col-sm-12">
-              <div class="single-model-search">
-                <h2>{% trans "DEPARTURE DATE" %}:</h2>
-                <div class="model-select-icon">
-                  <select class="form-control">
-                    <option value="default">../../....</option>
-                    <!-- /.option-->
-                  </select>
-                  <!-- /.select-->
-                </div>
-                <!-- /.model-select-icon -->
-              </div>
-              <div class="single-model-search">
-                <h2>{% trans "RETURN DATE" %}:</h2>
-                <div class="model-select-icon">
-                  <select class="form-control">
-                    <option value="default">../../....</option>
-                    <!-- /.option-->
-                  </select>
-                  <!-- /.select-->
-                </div>
-                <!-- /.model-select-icon -->
-              </div>
-            </div>
-            <div class="col-md-2 col-sm-12">
-              <div class="single-model-search text-center">
-                <button class="welcome-btn model-search-btn" onclick="window.location.href='#'"> {% trans "search" %} </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  {% include "components/search.html" %}
 </section>
 <!--/.welcome-->
 <!--welcome end -->
@@ -104,36 +23,80 @@
 <!--booking start -->
 <section id="booking" class="booking">
   <div class="container">
-    <div class="booking-content">
-      <div class="row">
-        <div class="single-booking-item">
-          <div class="single-booking-icon">
-            <i class="flaticon-arrow-down-angle"></i>
+      <div class="booking-content">
+          <div class="row">
+              <div class="single-booking-item">
+                  <div class="single-booking-icon">
+                      <i class="flaticon-arrow-down-angle"></i>
+                  </div>
+                  {% if departure_flights %}
+                  <h2>{{ from_airport }} --- {{ to_airport }}</h2>
+                  {% else %}
+                  <p>
+                    {% trans "No flights available. Please fill in the form correctly or choose another date and destination." %}
+                  </p>
+                  {% endif %}
+              </div>
           </div>
-          <h2>
-            <a href="#">{% trans "No flights available" %}</a>
-          </h2>
-          <p> {% trans "Please choose a different date or destination." %}" </p>
-        </div>
+          </div>
+          <div class="row">
+          {% if departure_flights %}
+          {% for flight in departure_flights %}
+              <div class="col-md-6">
+              <div class="single-booking-item">
+                  <h2>
+                      <a href="#">
+                          <h2>{{ flight.departure_time|date:"d/m/Y g:i A" }} - {{ flight.arrival_time|date:"d/m/Y g:i A" }}
+                          </h2>
+                          <h2>{{ flight.departure_airport }} --- {{ flight.arrival_airport }}</h2>
+                      </a>
+                  </h2>
+                  <i class="material-icons">&#xe7fd;</i>
+                      {{ flight.base_price }}
+              </div>
+          </div>
+          {% endfor %}
+          {% endif %}
+          </div>
+          {% if trip_type == 'round' %}
+              <div class="row">
+                  <div class="single-booking-item">
+                      <div class="single-booking-icon">
+                          <i class="flaticon-arrow-down-angle"></i>
+                      </div>
+                      <h2>{{ to_airport }} --- {{ from_airport }}</h2>
+                      {% if not return_flights %}
+                      <p>
+                        {% trans "No flights available. Please fill in the form correctly or choose another date and destination." %}
+                      </p>
+                      {% endif %}
+                  </div>
+              </div>
+              <div class="row"></div>
+              {% if return_flights %}
+              {% for flight in return_flights %}
+                  <div class="col-md-6">
+                  <div class="single-booking-item">
+                      <h2>
+                          <a href="#">
+                              <h2>{{ flight.departure_time|date:"d/m/Y g:i A" }} - {{ flight.arrival_time|date:"d/m/Y g:i A" }}
+                              </h2>
+                              <h2>{{ flight.departure_airport }} --- {{ flight.arrival_airport }}</h2>
+                          </a>
+                      </h2>
+                      <i class="material-icons">&#xe7fd;</i>
+                          {{ flight.base_price }}
+                  </div>
+              </div>
+              {% endfor %}
+              {% endif %}
+              </div>
+          {% endif %}
       </div>
-    </div>
-    <div class="row">
-      <div class="single-booking-item">
-        <!-- <div class="single-booking-icon">
-          <h1><a href="#">Vietjack</a></h1>
-        </div> -->
-        <h2>
-          <a href="#">
-            <h2>10:40 --- 12:30</h2>
-            <h2>SGN --- DAD</h2>
-          </a>
-        </h2>
-        <p> {% trans "1.763.323 VND/customer" %} </p>
-      </div>
-    </div>
   </div>
-  <!--/.container-->
-</section>
-<!--/.booking-->
-<!--booking end--> 
+  </div>
+  </div><!--/.container-->
+</section><!--/.booking-->
+<!--booking end-->
 {% endblock %}
+

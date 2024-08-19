@@ -1,5 +1,5 @@
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from .constants import (
     MAX_LENGTH_NAME, GENDER_CHOICES, MAX_LENGTH_CHOICES, BOOKING_STATUS,
     STATUS_CHOICES, ROLE_CHOICES, CARD_TYPE_CHOICES, PAYMENT_METHOD_CHOICES
