@@ -374,6 +374,38 @@ nav.navbar.bootsnav .navbar-toggle i{color: #4e4ffa;}
 .single-booking-item:hover  p:before {background: #fff;}
 .single-booking-item:hover{box-shadow: 0 12px 30px 0px rgba(0,1,193,.2);background: #4e4ffa;border: 1px solid #4e4ffa;}
 
+/* Change color on click */
+.single-booking-item.selected {
+  background-color: #3030ea; /* Set to #3030ea on click */
+  border: 1px solid #3030ea; /* Match the border color */
+  box-shadow: 0 12px 30px 0px rgba(0, 1, 193, 0.2);
+}
+
+.single-booking-item.selected h2 a, .single-booking-item.selected p {
+  color: #fff; /* Set text color to white for contrast */
+}
+
+.single-booking-item.selected p:before {
+  background-color: #fff; /* Set line color to white for contrast */
+}
+
+.booking-btn {
+    display: inline-block;
+    width: 230px;
+    height: 60px;
+    background: #4e4ffa;
+    color: #fff;
+    border-radius: 3px;
+    margin-top: 55px;
+    -webkit-transition: .3s linear; 
+    -moz-transition:.3s linear; 
+    -ms-transition:.3s linear; 
+    -o-transition:.3s linear;
+    transition: .3s linear;
+}
+.booking-btn:hover{
+    background: #0102fa;
+}
 
 /*-------------------------------------
         6. New-flights
