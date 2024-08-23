@@ -8,4 +8,5 @@ urlpatterns = [
     path('register', views.register_view, name='register'),
     path('flight', flight_list, name = 'flight_list'),
     path('flight/<int:flight_id>/', flight_detail, name='flight_detail'),
+    path('verify-email/<str:email>/', views.verify_email, name='verify_email'),
 ]

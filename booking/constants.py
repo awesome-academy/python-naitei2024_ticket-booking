@@ -10,6 +10,7 @@ GENDER_CHOICES = [
 ]
 
 STATUS_CHOICES = [
+    ('Inactive', _('Inactive')),
     ('Active', _('Active')),
     ('Suspended', _('Suspended')),
 ]
@@ -35,3 +36,5 @@ PAYMENT_METHOD_CHOICES = [
 ]
 
 REGEX_PATTERN = r"^[\w]+$"
+
+OTP_TIMEOUT = 5 # 5 minutes

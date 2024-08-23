@@ -2,13 +2,13 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from .constants import (
     MAX_LENGTH_NAME, GENDER_CHOICES, MAX_LENGTH_CHOICES, BOOKING_STATUS,
-    STATUS_CHOICES, ROLE_CHOICES, CARD_TYPE_CHOICES, PAYMENT_METHOD_CHOICES
+    STATUS_CHOICES, ROLE_CHOICES, CARD_TYPE_CHOICES, PAYMENT_METHOD_CHOICES, OTP_TIMEOUT
 )
 from django.utils import timezone
 from django.core.validators import RegexValidator, MinLengthValidator
 from datetime import date
 from django.contrib.auth.models import AbstractUser
-from django.db.models import Min, Q, F
+import random
 
 class Account(AbstractUser):
     account_id = models.AutoField(primary_key=True)
@@ -16,7 +16,7 @@ class Account(AbstractUser):
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=20)
     created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Active')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Inactive')
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='Member')
     first_name = models.CharField(
         max_length=MAX_LENGTH_NAME, verbose_name=_('first name'), default='New')
@@ -30,7 +30,7 @@ class Account(AbstractUser):
         verbose_name=_('gender')
     )
     date_of_birth = models.DateField(default=timezone.now)
-    passport_number = models.CharField(max_length=MAX_LENGTH_NAME, unique=True, default="N12345678")
+    passport_number = models.CharField(max_length=MAX_LENGTH_NAME, unique=True, null=True, blank=True)
     nationality = models.CharField(max_length=MAX_LENGTH_NAME, default=_('Vietnamese'))
 
     REQUIRED_FIELDS = ['email', 'phone_number']
@@ -205,3 +205,22 @@ class Voucher(models.Model):
 
     def __str__(self):
         return f"Voucher {self.code} - {self.description} - Expires on {self.expiry_date}"
+
+class OtpToken(models.Model):
+    otp_token_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey('Account', on_delete=models.CASCADE)
+    otp = models.CharField(max_length=6)
+    otp_expires_at = models.DateTimeField()
+
+    def is_expired(self):
+        """Check if the OTP token is expired."""
+        return timezone.now() > self.otp_expires_at
+    
+    def generate_otp(self):
+        """Generate a random 6-digit OTP."""
+        self.otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        self.otp_expires_at = timezone.now() + timezone.timedelta(minutes=OTP_TIMEOUT)
+        self.save()
+    
+    def __str__(self):
+        return f"OTP Token {self.otp_token_id} - {self.user.email} - {self.otp}"

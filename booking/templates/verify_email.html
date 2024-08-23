@@ -1,0 +1,48 @@
+
+{% extends "base_generic.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+  <div class="background-banner">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="model-form">
+            <div class="custom-title">
+              <h3>{% trans "Verify Email" %}</h3><br>
+            </div>
+            {% if messages %}
+            <div class="container-sm">
+              {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div class="alert">*{{ message }}</div>
+                {% endif %}
+              {% endfor %}
+            </div>
+            {% endif %}
+            <form action="{% url 'verify_email' email=email %}" method="post">
+              {% csrf_token %}
+              {{ form.non_field_errors }}
+              <div class="form-group">
+                {{ email }}
+              </div>
+              <div class="form-group">
+                {{ form.otp.label_tag }}
+                {{ form.otp }}
+                {{ form.otp.errors }}
+              </div>
+              <div class="custom-title">
+                <input class="btn btn-danger button-style" type="submit" value="Verify">
+              </div>
+            </form>
+            <br>
+            <div class="custom-title">
+              {% trans "Don't have an account?" %}&nbsp;&nbsp;<a href="{% url 'register' %}">{% trans "Sign Up" %}</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
