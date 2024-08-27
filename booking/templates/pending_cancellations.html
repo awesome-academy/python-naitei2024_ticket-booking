@@ -29,6 +29,7 @@
                                         <tr>
                                             <th scope="col">{% trans "Booking ID" %}</th>
                                             <th scope="col">{% trans "Flight Number" %}</th>
+                                            <th scope="col">{% trans "Email" %}</th>
                                             <th scope="col">{% trans "Booking Date" %}</th>
                                             <th scope="col">{% trans "Status" %}</th>
                                             <th scope="col">{% trans "Actions" %}</th>
@@ -39,6 +40,7 @@
                                             <tr>
                                                 <td>{{ booking.booking_id }}</td>
                                                 <td>{{ booking.flight_ticket_type.flight.flight_number }}</td>
+                                                <td>{{ booking.account.email }}</td>
                                                 <td>{{ booking.booking_date }}</td>
                                                 <td>{{ booking.status }}</td>
                                                 <td>

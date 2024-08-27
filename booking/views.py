@@ -216,12 +216,12 @@ def cancel_booking(request, booking_id):
     booking = get_object_or_404(Booking, booking_id=booking_id)
 
     if booking.account != request.user:
-        messages.error(request, "You do not have permission to cancel this booking.")
+        messages.error(request, _("You do not have permission to cancel this booking."))
         return redirect('user_bookings')
     
     booking.set_status('PendingCancellation')
     booking.save()
-    messages.success(request, "Your booking cancellation request has been submitted and is pending approval.")
+    messages.success(request, _("Your booking cancellation request has been submitted and is pending approval."))
 
     return redirect('user_bookings')
 def is_admin(user):
@@ -236,18 +236,27 @@ def pending_cancellations(request):
 @user_passes_test(is_admin)
 def approve_cancellation(request, booking_id):
     booking = get_object_or_404(Booking, booking_id=booking_id)
-    booking.approve_cancellation()
+    pending_cancellation_status = dict(BOOKING_STATUS)['PendingCancellation']
+    if booking.status != pending_cancellation_status:
+        messages.error(request, _("This booking cannot be approved."))
+        return redirect('pending_cancellations')
+    booking.set_status("Canceled")  
+    booking.flight_ticket_type.release_seat()
     booking.save()
-    messages.success(request, "Cancellation approved successfully.")
+    messages.success(request, _("Cancellation approved successfully."))
     return redirect('pending_cancellations')
 
 @login_required
 @user_passes_test(is_admin)
 def reject_cancellation(request, booking_id):
     booking = get_object_or_404(Booking, booking_id=booking_id)
+    pending_cancellation_status = dict(BOOKING_STATUS)['PendingCancellation']
+    if booking.status != pending_cancellation_status :
+        messages.error(request, _("This booking cannot be rejected."))
+        return redirect('pending_cancellations')
     booking.set_status("DeniedCancellation")  
     booking.save()
-    messages.success(request, "Cancellation rejected.")
+    messages.success(request, _("Cancellation rejected."))
     return redirect('pending_cancellations')
 
 
