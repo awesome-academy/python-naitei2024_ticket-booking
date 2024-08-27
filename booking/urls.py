@@ -21,4 +21,6 @@ urlpatterns = [
     path('review', views.book_infor_view, name='book_infor'),
     path('payment', views.payment_view, name='payment'),
     path('process', views.process_view, name='process'),
+    path('flight/ticket/<int:booking_id>', views.print_ticket, name="print_ticket"),
+
 ]

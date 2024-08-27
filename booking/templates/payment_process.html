@@ -16,8 +16,6 @@
         {% trans "Please wait while we are processing your payment" %}.
     </div>
 </section>
-<input type="hidden" class="ref1" value="{{ticket1.booking_id}}">
-<input type="hidden" class="ref2" value="{{ticket2.booking_id}}">
 <section class="section section2">
     <div class="navigation-back"></div>
     <div class="svg-div-c">
@@ -46,7 +44,7 @@
     </div>
     <div class="ticket-div">
         <div>
-            <form action="#" method="get" target="_blank">
+            <form action="{% url 'print_ticket' booking_id=ticket1.booking_id %}" method="post" target="_blank">
                 <input type="hidden" name="ref" value="{{ticket1.booking_id}}">
                 <button type="submit" class="btn btn-primary">
                     {% trans "Print Ticket" %} ({{ticket1.flight_ticket_type.flight.departure_airport.airport_code}} {% trans "to" %} 
@@ -54,7 +52,7 @@
                 </button>
             </form>
             {% if ticket2 %}
-                <form action="#" method="get" target="_blank">
+                <form action="{% url 'print_ticket' booking_id=ticket2.booking_id %}" method="post" target="_blank">
                     <input type="hidden" name="ref" value="{{ticket2.booking_id}}">
                     <button type="submit" class="btn btn-primary">
                         {% trans "Print Ticket" %} ({{ticket2.flight_ticket_type.flight.departure_airport.airport_code}} {% trans "to" %} 

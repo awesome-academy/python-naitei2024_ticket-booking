@@ -1,0 +1,409 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/icon" href="{% static 'logo/favicon.png' %}" />
+  <title>e-Ticket</title>
+  <style>
+    @page{
+      margin: 37px 50px;
+    }
+    .navbar-brand {
+      font-size: 24px;
+      letter-spacing: 3px;
+      font-family: 'Rufina', serif;
+      font-weight: 700;
+      padding: 45px 0px;
+      text-transform:uppercase;
+    }
+    *{
+      padding: 0;
+      margin: 0;
+      font-family: sans-serif;
+    }
+    body{
+      padding: 7% 7%;
+    }
+    nav{
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .logo{
+      display: flex;
+    }
+    .header{
+      text-align: right;
+      font-size: 2em;
+      font-weight: 600;
+    }
+    li{
+      margin-top: 5px;
+      margin-bottom: 5px;
+    }
+    .col{
+      -ms-flex-preferred-size:0;
+      flex-basis:0;
+      -ms-flex-positive:1;
+      flex-grow:1;
+      max-width:100%
+    }
+    table{
+      margin-top: 0;
+      width: 100%;
+    }
+    .table{
+      margin-top: 25px;
+    }
+    tr{
+      width: 100%;
+    }
+    th{
+      width: 25%;
+      text-align: left;
+      padding: 5px 20px;
+    }
+    .foreign-th{
+      padding: 5px 10px;
+    }
+    td{
+      width: 25%;
+      text-align: left;
+      padding: 5px 15px;
+    }
+    caption{
+      text-align: left;
+      background-color: #a9a9a9;
+      color: white;
+      padding: 8px 15px;
+      font-weight: bold;
+    }
+    .tr-caption{
+      text-align: left;
+      background-color: #a9a9a9;
+      color: white;
+      padding: 0;
+      font-weight: bold;
+      width: 100%;
+      font-size: 1.4em;
+    }
+    .tr-even{
+      background-color: #f0f0f0;
+    }
+    .tr-odd{
+      background-color: white;
+    }
+    .foreign-pad{
+      padding-left: 10px;
+    }
+    .national-pad{
+      padding-left: 20px;
+    }
+    .final-line{
+      margin: 10px 0; 
+      font-size: .8em;
+    }
+    .border-line{
+      height: 1px; 
+      border: 0; 
+      background-color: grey;
+    }
+    .info-block{
+      margin: 15px auto;
+    }
+    .header-line{
+      width: 100%;
+    }
+    .flight-info-1{
+      width: 29%; 
+      padding-left: 20px;
+    }
+    .flight-info-2{
+      width: 22%; 
+      padding-left: 20px;
+    }
+    .flight-info-3{
+      width: 49%; 
+      padding-left: 20px;
+    }
+    .wide-row{
+      width: 75%;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="col logo">
+      <span class="navbar-brand">CheapJet</span>
+    </div>
+    <div class="col header">
+      <span style="margin: auto 0 auto auto;">E-Ticket</span>
+    </div>
+  </nav>
+  <hr class="border-line" noshade>
+  <main class="foreign-pad">
+    <div class="info-block">
+      <h3>Important information</h3>
+      <ul class="national-pad">
+        <li>
+          This is your E-Ticket. You must bring it to the airport for check-in, 
+          and it is recommended for you to retain a copy for your records.
+        </li>
+        <li>
+          Each passenger needs a printed copy of this document for 
+          immigrations, customs, airport security checks and duty 
+          free purchases.
+        </li>
+        <li>
+          Economy Class passengers should report to airline check-in desks 3 
+          hours prior to departure of all flights. First and Business Class 
+          passengers should report to airline check-in desks not later than 
+          1 hour prior to departure. BOSS Class does not need to report to 
+          airline check-in desks, but on the flight directly. Boarding for 
+          your flight begins at least 35 minutes before your scheduled departure 
+          time. Gates will close 15 minutes prior to departure time.
+        </li>
+      </ul>
+    </div>
+    <div class="table-div">
+      <table class="table">
+        <tr class="tr-caption">
+          <td class="header-line">TICKET INFORMATION</td>
+        </tr>
+      </table>
+      <table cellspacing='0' >
+        <tr class="tr-odd">
+          <th>TICKET REFERENCE</th>
+          <td>{{payment.transaction_id | upper}}</td>
+          <th>BOOKING DATE & TIME</th>
+          <td>
+            {{ticket.booking_date | date:'d M y' | upper}}
+            <br>
+            {{ticket.booking_date | time:'H:i' | upper}}
+          </td>
+        </tr>
+        <tr class="tr-even">
+          <th>FLIGHT DATE</th>
+          <td>{{flight.departure_time | date:'d M y' | upper}}</td>
+          <th>CLASS</th>
+          <td>{{ticket.flight_ticket_type.ticket_type | upper}}</td>
+        </tr>
+        <tr class="tr-odd">
+          <th>EMAIL</th>
+          <td>{{ticket.account.email}}</td>
+          <th>MOBILE</th>
+          <td>{{ticket.account.phone_number}}</td>
+        </tr>
+        <tr class="tr-even">
+          <th>STATUS</th>
+          <td>{{ticket.status | upper}}</td>
+          <th></th>
+          <td></td>
+        </tr>
+      </table>
+      <table class="table">
+        <tr class="tr-caption">
+          <td class="header-line">PASSENGER INFORMATION</td>
+        </tr>
+      </table>
+      {% if is_foreign == True %}
+      <table cellspacing='0'>
+        <tr class="tr-odd">
+          <th class="foreign-th">PASSENGER NO.</th>
+          <th class="foreign-th">PASSENGER NAME</th>
+          <th class="foreign-th">D. OF BIRTH</th>
+          <th class="foreign-th">SEX</th>
+          <th class="foreign-th">NATIONALITY</th>
+          <th class="foreign-th">PASSPORT NO.</th>
+          <th class="foreign-th">PASS. ORIG</th>
+          <th class="foreign-th">EXPIRY DATE</th>
+          <th class="foreign-th">CLASS</th>
+        </tr>
+        {% for passenger in ticket.passengers.all %}
+          {% if forloop.counter|divisibleby:2 %}
+            <tr class="tr-odd">
+              <td class="foreign-pad">
+                {{forloop.counter}}
+              </td>
+              <td class="foreign-pad">
+                {{passenger.first_name | upper}} {{passenger.last_name | upper}}
+              </td>
+              <td class="foreign-pad">
+                {{passenger.date_of_birth | date:'d M y' | upper}}
+              </td>
+              <td class="foreign-pad">
+                {{passenger.gender | upper}}
+              </td>
+              <td class="foreign-pad">
+                {{passenger.nationality | upper}}
+              </td>
+              <td class="foreign-pad">
+                {{passenger.passport_number | upper}}
+              </td>
+              <td class="foreign-pad">
+                {{passenger.passport_from_country | upper}}
+              </td>
+              <td class="foreign-pad">
+                {{passenger.due_date | date:'d M y' | upper}}
+              </td>
+              <td class="foreign-pad">
+                {{ticket.flight_ticket_type.ticket_type | upper}}
+              </td>
+            </tr>
+          {% else %}
+            <tr class="tr-even">
+              <td class="foreign-pad">
+                {{forloop.counter}}
+              </td>
+              <td class="foreign-pad">
+                {{passenger.first_name | upper}} {{passenger.last_name | upper}}
+              </td>
+              <td class="foreign-pad">
+                {{passenger.date_of_birth | date:'d M y' | upper}}
+              </td>
+              <td class="foreign-pad">
+                {{passenger.gender | upper}}
+              </td>
+              <td class="foreign-pad">
+                {{passenger.nationality | upper}}
+              </td>
+              <td class="foreign-pad">
+                {{passenger.passport_number | upper}}
+              </td>
+              <td class="foreign-pad">
+                {{passenger.passport_from_country | upper}}
+              </td>
+              <td class="foreign-pad">
+                {{passenger.due_date | date:'d M y' | upper}}
+              </td>
+              <td class="foreign-pad">
+                {{ticket.flight_ticket_type.ticket_type | upper}}
+              </td>
+            </tr>
+          {% endif %}
+        {% endfor %}
+      </table>
+      {% else %}
+      <table cellspacing='0'>
+        <tr class="tr-odd">
+          <th>PASSENGER NO.</th>
+          <th>PASSENGER NAME</th>
+          <th>D. OF BIRTH</th>
+          <th>SEX</th>
+          <th>NATIONALITY</th>
+          <th>CLASS</th>
+        </tr>
+        {% for passenger in ticket.passengers.all %}
+          {% if forloop.counter|divisibleby:2 %}
+            <tr class="tr-odd">
+              <td class="national-pad">
+                {{forloop.counter}}
+              </td>
+              <td class="national-pad">
+                {{passenger.first_name | upper}} {{passenger.last_name | upper}}
+              </td>
+              <td class="national-pad">
+                {{passenger.date_of_birth | date:'d M y' | upper}}
+              </td>
+              <td class="national-pad">
+                {{passenger.gender | upper}}
+              </td>
+              <td class="national-pad">
+                {{passenger.nationality | upper}}
+              </td>
+              <td class="national-pad">
+                {{ticket.flight_ticket_type.ticket_type | upper}}
+              </td>
+            </tr>
+          {% else %}
+            <tr class="tr-even">
+              <td class="national-pad">
+                {{forloop.counter}}
+              </td>
+              <td class="national-pad">
+                {{passenger.first_name | upper}} {{passenger.last_name | upper}}
+              </td>
+              <td class="national-pad">
+                {{passenger.date_of_birth | date:'d M y' | upper}}
+              </td>
+              <td class="national-pad">
+                {{passenger.gender | upper}}
+              </td>
+              <td class="national-pad">
+                {{passenger.nationality | upper}}
+              </td>
+              <td class="national-pad">
+                {{ticket.flight_ticket_type.ticket_type | upper}}
+              </td>
+            </tr>
+          {% endif %}
+        {% endfor %}
+      </table>
+      {% endif %}
+      <table class="table">
+        <tr class="tr-caption">
+          <td class="header-line">FLIGHT INFORMATION</td>
+        </tr>
+      </table>
+      <table cellspacing='0'>
+        <tr class="tr-odd">
+          <th>FLIGHT</th>
+          <th>DEPART/ARRIVE</th>
+          <th>AIRPORT/TERMINAL</th>
+        </tr>
+        <tr class="tr-even">
+          <td class="flight-info-1">
+            {{flight.airline | upper}}<br>{{flight.plane | upper}}
+          </td>
+          <td class="flight-info-2">
+            {{flight.departure_time | date:'d M y' | upper}}<br>
+            {{flight.departure_time | time:'H:i'}}
+          </td>
+          <td class="flight-info-3">
+            {{flight.departure_airport.name | upper}} 
+            ({{flight.departure_airport.airport_code | upper}})
+          </td>
+        </tr>
+        <tr class="tr-odd">
+          <td class="flight-info-1"></td>
+          <td class="flight-info-2">
+            {{flight.arrival_time | date:'d M y' | upper}}<br>
+            {{flight.arrival_time | time:'H:i'}}
+          </td>
+          <td class="flight-info-3">
+            {{flight.arrival_airport.name | upper}} 
+            ({{flight.arrival_airport.airport_code | upper}})
+          </td>
+        </tr>
+      </table>
+      <table class="table">
+        <tr class="tr-caption">
+          <td class="header-line">FARE DETAILS</td>
+        </tr>
+      </table>
+      <table cellspacing='0'>
+        <tr class="tr-odd">
+          <th>FARE</th>
+          <td class="wide-row">VND {{initial_price}}</td>
+        </tr>
+        <tr class="tr-even">
+          <th>PASSENGER NO.</th>
+          <td class="wide-row">{{ticket.seat_number}}</td>
+        </tr>
+        <tr class="tr-odd">
+          <th>TOTAL</th>
+          <td class="wide-row">VND {{total_price}}</td>
+        </tr>
+      </table>
+    </div>
+  </main>
+  <p class="final-line">
+    &#169;{{ current_year}} CheapJet Inc. All rights reserved.
+  </p>
+  <!-- 30 Kgs Check-in, 7 Kgs Cabin-->
+</body>
+</html>

@@ -32,6 +32,7 @@
                                             <th scope="col">{% trans "Date" %}</th>
                                             <th scope="col">{% trans "Status" %}</th>
                                             <th scope="col">{% trans "Actions" %}</th>
+                                            <th scope="col">{% trans "Details" %}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -51,6 +52,14 @@
                                                             <button type="submit" class="btn-cancel">{% trans "Cancel" %}</button>
                                                         </form>
                                                         {% endif %}
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if booking.status == "Confirmed" %}
+                                                    <form method="POST" action="{% url 'print_ticket' booking_id=booking.booking_id %}">
+                                                        <input type="hidden" name="ref" value='{{booking.booking_id}}'>                                                        
+                                                        <button type="submit" class="btn btn-primary">{% trans "View Details" %}</button>
+                                                    </form>
                                                     {% endif %}
                                                 </td>
                                             </tr>
