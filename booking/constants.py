@@ -45,3 +45,5 @@ REGEX_PATTERN_NUMBER = r"^[0-9]+$"
 REGEX_PATTERN_EMAIL = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
 
 PRICE_FORMAT = '{:,.0f}'
+
+ISO = 'ISO-8859-1'

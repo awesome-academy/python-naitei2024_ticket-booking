@@ -5,15 +5,23 @@ from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 from .forms import *
 from .models import *
-from .constants import PRICE_FORMAT, REGEX_PATTERN, REGEX_PATTERN_NAME, REGEX_PATTERN_NUMBER, REGEX_PATTERN_EMAIL
+from .constants import (
+    PRICE_FORMAT, REGEX_PATTERN, REGEX_PATTERN_NAME, 
+    REGEX_PATTERN_NUMBER, REGEX_PATTERN_EMAIL, ISO
+)
 from django.shortcuts import render, get_object_or_404
 from .models import Flight, Airport
 from django.db.models import Min, Q, F
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
+from django.views.decorators.csrf import csrf_exempt
+from io import BytesIO
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 import secrets
 import re
+
 
 # Create your views here.
 def login_view(request):
@@ -241,7 +249,7 @@ def approve_cancellation(request, booking_id):
         messages.error(request, _("This booking cannot be approved."))
         return redirect('pending_cancellations')
     booking.set_status("Canceled")  
-    booking.flight_ticket_type.release_seat()
+    booking.flight_ticket_type.release_seat(int(booking.seat_number))
     booking.save()
     messages.success(request, _("Cancellation approved successfully."))
     return redirect('pending_cancellations')
@@ -258,7 +266,6 @@ def reject_cancellation(request, booking_id):
     booking.save()
     messages.success(request, _("Cancellation rejected."))
     return redirect('pending_cancellations')
-
 
 def book_infor_view(request):
     flight_1 = request.GET.get('d_flight_id')
@@ -325,7 +332,6 @@ def __create_ticket(user, passengers, passengerscount, flight, flight_class, cou
         booking.passengers.add(passenger)
     flightTicket = FlightTicketType.objects.get(flight=flight, ticket_type__name=flight_class)
     booking.flight_ticket_type = flightTicket
-    flightTicket.book_seat(int(passengerscount))
     phone_number = f"0{mobile}"
     booking.account.phone_number = phone_number
     booking.account.email = email
@@ -466,7 +472,7 @@ def payment_view(request):
         else:
             return HttpResponseRedirect(reverse("login"))
     else:
-        return HttpResponse("Method must be post.")
+        return redirect(reverse('index'))
 
 def process_view(request):
     if request.user.is_authenticated:
@@ -548,32 +554,36 @@ def process_view(request):
                 ticket = Booking.objects.get(booking_id=ticket1_id)
                 ticket.status = 'Confirmed'
                 ticket.booking_date = timezone.now()
+                ticket.flight_ticket_type.book_seat(int(ticket.seat_number))
+                ticket.flight_ticket_type.save()
                 ticket.save()
                 payment = Payment.objects.filter(booking=ticket).exists()
                 if payment:
                     payment = Payment.objects.get(booking=ticket)
                 else:
                     payment = Payment.objects.create(booking=ticket,card=card,amount=fare)
+                    payment.transaction_id = secrets.token_hex(3).upper()
                 payment.card = card
                 payment.amount = fare
                 payment.payment_method = 'Credit Card'
-                payment.transaction_id = secrets.token_hex(3).upper()
                 id1 = payment.transaction_id
                 payment.save()
                 if t2:
                     ticket2 = Booking.objects.get(booking_id=ticket2_id)
                     ticket2.status = 'Confirmed'
                     ticket2.booking_date = timezone.now()
+                    ticket2.flight_ticket_type.book_seat(int(ticket2.seat_number))
+                    ticket2.flight_ticket_type.save()
                     ticket2.save()
                     payment2 = Payment.objects.filter(booking=ticket2).exists()
                     if payment2:
                         payment2 = Payment.objects.get(booking=ticket2)
                     else:
                         payment2 = Payment.objects.create(booking=ticket2,card=card,amount=fare)
+                        payment2.transaction_id = secrets.token_hex(3).upper()
                     payment2.card = card
                     payment2.amount = fare
                     payment2.payment_method = 'Credit Card'
-                    payment2.transaction_id = secrets.token_hex(3).upper()
                     id2 = payment2.transaction_id
                     payment2.save()
                     return render(request, 'payment_process.html', {
@@ -591,6 +601,38 @@ def process_view(request):
             except Exception as e:
                 return HttpResponse(e)
         else:
-            return HttpResponse("Method must be post.")
+            return redirect(reverse('index'))
     else:
         return HttpResponseRedirect(reverse('login'))
+
+def render_to_pdf(template_src, context_dict={}):
+    template = get_template(template_src)
+    html = template.render(context_dict)
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode(ISO)), result)
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type='application/pdf')
+    return None
+
+@csrf_exempt
+def print_ticket(request, booking_id):
+    ticket = Booking.objects.get(booking_id=booking_id)
+    payment = Payment.objects.get(booking_id=booking_id)
+    flight = ticket.flight_ticket_type.flight
+    is_foreign = False
+    for passenger in ticket.passengers.all():
+        if passenger.passport_number != 'None':
+            is_foreign = True
+            break
+    data = {
+        'ticket': ticket,
+        'payment': payment,
+        'flight': flight,
+        'is_foreign': is_foreign,
+        'current_year': timezone.now().year,
+        'initial_price': PRICE_FORMAT.format(float(ticket.flight_ticket_type.price)),
+        'total_price': PRICE_FORMAT.format(float(ticket.flight_ticket_type.price) 
+                                           * int(ticket.seat_number))
+    }
+    pdf = render_to_pdf('ticket.html', data)
+    return HttpResponse(pdf, content_type='application/pdf')
