@@ -21,6 +21,12 @@ from django.template.loader import get_template
 from xhtml2pdf import pisa
 import secrets
 import re
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from ticketbooking.settings import EMAIL_HOST_USER
+from django.utils.html import strip_tags
+from django.core.mail import send_mail
+from django.contrib.sites.shortcuts import get_current_site
 
 
 # Create your views here.
@@ -555,6 +561,27 @@ def payment_view(request):
             return HttpResponseRedirect(reverse("login"))
     else:
         return redirect(reverse('index'))
+    
+def __send_booking_success_email(request, booking_id):
+    subject = 'Your Booking is Confirmed!'
+    from_email = EMAIL_HOST_USER
+    ticket = Booking.objects.get(booking_id=booking_id)
+    payment = Payment.objects.get(booking_id=booking_id)
+    flight = ticket.flight_ticket_type.flight
+    recipient_email = [ticket.account.email]
+    current_site = get_current_site(request)
+
+    # Render the HTML email content
+    html_content = render_to_string('booking_success_email.html', {
+        'ticket': ticket,
+        'flight': flight,
+        'payment': payment,
+        'domain': current_site.domain,
+    })
+    # Send the email
+    send_mail(subject, html_content, from_email, recipient_email)
+
+
 
 @user_passes_test(is_active, '/booking/login')
 def process_view(request):
@@ -697,12 +724,14 @@ def process_view(request):
                     payment2.payment_method = 'Credit Card'
                     id2 = payment2.transaction_id
                     payment2.save()
+                    __send_booking_success_email(request=request, booking_id=ticket1_id)
                     return render(request, 'payment_process.html', {
                         'ticket1': ticket,
                         'ticket2': ticket2,
                         'ref1': id1,
                         'ref2': id2
                     })
+                __send_booking_success_email(request=request, booking_id=ticket1_id)
                 return render(request, 'payment_process.html', {
                     'ticket1': ticket,
                     'ticket2': "",
