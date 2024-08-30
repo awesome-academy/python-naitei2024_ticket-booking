@@ -29,7 +29,7 @@
         <li><a href="{% url 'login' %}">{% trans "log in" %}</a></li>
         {% else %}
         <li><a href="{% url 'user_bookings' %}">{% trans "Your Booking" %}</a></li>
-        <li><a href="#">{% trans "account" %}</a></li>
+        <li><a href="{% url 'account' %}">{% trans "account" %}</a></li>
         {% if user.is_superuser %}
         <li><a href="{% url 'pending_cancellations' %}">{% trans "Approve" %}</a></li>
         {% endif %}

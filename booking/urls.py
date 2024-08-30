@@ -23,4 +23,6 @@ urlpatterns = [
     path('process', views.process_view, name='process'),
     path('flight/ticket/<int:booking_id>', views.print_ticket, name="print_ticket"),
 
+    path('account', views.account, name='account'),
+    path('update-account', views.update_account, name='update_account'),
 ]

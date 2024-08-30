@@ -58,3 +58,8 @@ class SignUpForm(forms.ModelForm):
 
         if password != confirm_password:
             raise ValidationError(_("Password and confirm password are not the same."))
+
+class UpdateAccountForm(forms.ModelForm):
+    class Meta:
+        model = Account
+        fields = ['email', 'phone_number', 'first_name', 'last_name', 'gender', 'date_of_birth']
