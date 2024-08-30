@@ -61,7 +61,6 @@
                                             <th scope="col">{% trans "Arrival City" %}</th>
                                             <th scope="col">{% trans "Departure Time" %}</th>
                                             <th scope="col">{% trans "Arrival Time" %}</th>
-                                            <th scope="col">{% trans "Price" %}</th>
                                             <th scope="col">{% trans "Details" %}</th>
                                         </tr>
                                     </thead>
@@ -73,7 +72,6 @@
                                                 <td>{{ flight.arrival_airport.city }}</td>
                                                 <td>{{ flight.departure_time }}</td>
                                                 <td>{{ flight.arrival_time }}</td>
-                                                <td>${{ flight.base_price }}</td>
                                                 <td><a href="{% url 'flight_detail' flight_id=flight.flight_id %}" class="btn btn-primary btn-sm">View Details</a></td>
                                             </tr>
                                         {% endfor %}

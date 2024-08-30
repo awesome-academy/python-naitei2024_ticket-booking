@@ -186,16 +186,17 @@ def index(request):
             flight.ticket_type_price = PRICE_FORMAT.format(flight.ticket_type_price)
 
     return render(request, "homepage.html", context)
-
+# Nhắc Hưng 
 def flight_detail(request, flight_id):
     flight = get_object_or_404(Flight, flight_id=flight_id)
     departure_airport = flight.departure_airport
     arrival_airport = flight.arrival_airport
-    
+    ticket_types = FlightTicketType.objects.filter(flight=flight)
     context = {
         'flight': flight,
         'departure_airport': departure_airport,
         'arrival_airport': arrival_airport,
+        'ticket_types': ticket_types,
     }
     
     return render(request, 'flight_detail.html', context)
