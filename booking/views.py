@@ -21,6 +21,9 @@ from django.template.loader import get_template
 from xhtml2pdf import pisa
 import secrets
 import re
+from ticketbooking import settings
+from django.contrib.auth.decorators import login_required
+import pycountry
 
 
 # Create your views here.
@@ -748,3 +751,31 @@ def print_ticket(request, booking_id):
     }
     pdf = render_to_pdf('ticket.html', data)
     return HttpResponse(pdf, content_type='application/pdf')
+
+@login_required
+def account(request):
+    user = request.user
+    context = {
+        'user': user,
+    }
+    
+    return render(request, "account.html", context)
+
+@login_required
+def update_account(request):
+    countries = [country.name for country in pycountry.countries]
+    user = request.user
+
+    if request.method == 'POST':
+        form = UpdateAccountForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _('Account updated successfully'))
+            return redirect('account')
+        else:
+            # Print form errors to debug
+            print(form.errors)
+    else:
+        form = UpdateAccountForm(instance=request.user)
+
+    return render(request, 'update_account.html', {'form': form, 'countries': countries, 'user': user})

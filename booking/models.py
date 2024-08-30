@@ -26,7 +26,6 @@ class Account(AbstractUser):
     gender = models.CharField(
         max_length=MAX_LENGTH_CHOICES,
         choices=GENDER_CHOICES,
-        blank=True,
         null=True,
         verbose_name=_('gender')
     )
