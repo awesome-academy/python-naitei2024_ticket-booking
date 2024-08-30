@@ -58,3 +58,6 @@ class SignUpForm(forms.ModelForm):
 
         if password != confirm_password:
             raise ValidationError(_("Password and confirm password are not the same."))
+
+class PasswordResetRequestForm(forms.Form):
+    email = forms.EmailField(label="Email", max_length=254)

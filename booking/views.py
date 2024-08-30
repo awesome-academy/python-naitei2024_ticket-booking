@@ -21,6 +21,15 @@ from django.template.loader import get_template
 from xhtml2pdf import pisa
 import secrets
 import re
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.sites.shortcuts import get_current_site
+from .utils import account_activation_token
+from django.contrib.auth import update_session_auth_hash
+from ticketbooking.settings import EMAIL_HOST_USER
+
 
 
 # Create your views here.
@@ -748,3 +757,56 @@ def print_ticket(request, booking_id):
     }
     pdf = render_to_pdf('ticket.html', data)
     return HttpResponse(pdf, content_type='application/pdf')
+
+def password_reset_request(request):
+    if request.method == "POST":
+        form = PasswordResetRequestForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            associated_users = Account.objects.filter(email=email) 
+            if associated_users.exists():
+                for user in associated_users:
+                    current_site = get_current_site(request)
+                    subject = 'Password Reset Requested'
+                    message = render_to_string('password_reset_email.html', {
+                        'user': user,
+                        'domain': current_site.domain,
+                        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                        'token': account_activation_token.make_token(user),
+                    })
+                    send_mail(subject, message, EMAIL_HOST_USER, [user.email])
+                messages.success(request, 'An email has been sent to reset your password.')
+                return redirect('password_reset_done') 
+            else:
+                messages.error(request, 'No user with that email address exists.')
+                return redirect('password_reset') 
+    else:
+        form = PasswordResetRequestForm()
+    return render(request, 'password_reset_form.html', {'form': form})
+
+def password_reset_done(request):
+    return render(request, 'password_reset_done.html')
+
+def password_reset_confirm(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = Account.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, Account.DoesNotExist):
+        user = None
+
+    if user is not None and account_activation_token.check_token(user, token):
+        if request.method == 'POST':
+            password = request.POST.get('password')
+            password_confirm = request.POST.get('password_confirm')
+            if password and password == password_confirm:
+                user.set_password(password)
+                user.save()
+                update_session_auth_hash(request, user)  # To keep the user logged in after changing the password
+                messages.success(request, 'Your password has been successfully reset.')
+                return redirect('login')
+            else:
+                messages.error(request, 'Passwords do not match.')
+        return render(request, 'password_reset_confirm.html', {'validlink': True})
+    else:
+        messages.error(request, 'The reset link is invalid or has expired.')
+        return render(request, 'password_reset_confirm.html', {'validlink': False})
