@@ -32,6 +32,7 @@ class SignUpForm(forms.ModelForm):
     )
     phone_number = forms.CharField(
         max_length=20, 
+        validators=[RegexValidator(regex=REGEX_PATTERN_NUMBER)],
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Phone Number')}), 
         label=_('Phone Number')
     )
